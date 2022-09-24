@@ -9,6 +9,7 @@ stocks = {"成都银行":"601838","兖矿能源":"600188","江苏银行":"600919
           "绿地控股":"600606","上港集团":"600018","上机数控":"603185","特变电工":"600089","天合光能":"688599","天齐锂业":"002466",
           "通威股份":"600438","万泰生物":"603392","新城控股":"601155","盐湖股份":"000792","邮储银行":"601658","中国东航":"600115",
           "中国建筑":"601668","中国交建":"601800"}
+#stocks = {"成都银行":"601838"}
 
 def do_fetch():
     file = open('./temp.csv', 'w')
@@ -24,16 +25,23 @@ def do_fetch():
         stock_zh_a_hist_df = ak.stock_zh_a_hist(symbol=symbol, period="monthly", start_date="20220101",
                                                 end_date='20220901',
                                                 adjust="qfq")
+        print(stock_zh_a_hist_df)
+        # 计算 年初到 1月底, 2月底,...8月底的净值
         for i in range(1,9):
-            result[str(i)] = round(stock_zh_a_hist_df['涨跌幅'].head(i).sum(),2)
-
+            # 初始净值为 1
+            result[str(i)] = 1
+            for j in range(1,i+1):
+                chg = stock_zh_a_hist_df.loc[j-1, ['涨跌幅']]
+                result[str(i)] = result[str(i)] * (1 + float(chg/100))
+            # 保存最终结果为涨跌幅
+            result[str(i)] = 100 * (round(result[str(i)], 4) - 1)
         file.write(name)
         file.write(",")
+
         for i in range(1, 9):
             file.write(str(result[str(i)]))
             file.write(",")
         file.write("\n")
-        print(name, result)
     file.close()
 
 if __name__ == "__main__":
