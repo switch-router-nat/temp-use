@@ -33,7 +33,7 @@ def calc_chg(df, month):
     return value
 
 # 获取在时刻 t_index 时, 各只股票的净值变化
-def get_all_data(t_index):
+def get_all_data(t_index, last_n_month):
     value_dict={}
     for st in stocks.items():
         name = st[0]
@@ -48,7 +48,7 @@ def get_all_data(t_index):
             continue
 
         # 保存过去3个月内的净值变化
-        value_dict[name] = calc_chg(stock_zh_a_hist_df, 3)
+        value_dict[name] = calc_chg(stock_zh_a_hist_df, last_n_month)
 
     print("当期银行股表现:")
     print(value_dict)
@@ -120,19 +120,43 @@ def update_position(time, data):
     print("新持仓:")
     print(position)
 
+def save2file(file, t_index, result):
+    file.write(moment[t_index])
+    file.write(",")
+
+    file.write(str(result))
+    file.write(",")
+
+    for s in position:
+        file.write(s)
+        file.write(",")
+
+    file.write("\n")
 
 def run():
     global result
+
+    file = open('./work15.csv', 'w')
+    for head in ["时刻","净值","持仓股票1","持仓股票2"]:
+        file.write(head)
+        file.write(",")
+    file.write("\n")
+
     # 从 moment_index = 12 也就是 20190101 开始, 每 3 个月进行调仓
-    for t in range(12, 56, 3):
+    interval = 3
+    for t in range(12, 56, interval):
         print("-------------------")
         print(moment[t])
         # 获取上个周期数据
-        data = get_all_data(t)
+        data = get_all_data(t, interval)
         # 计算上个周期净值变化
         update_result(data)
         # 调仓
         update_position(t, data)
+        # 保存到文件
+        save2file(file, t, result)
+
+    file.close()
     print("==================================")
     print ("最终净值 %f" % result)
 
