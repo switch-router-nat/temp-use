@@ -23,8 +23,8 @@ for i in range(num_simulations):
     if selected_door == 3:
         # door 3 has prize
         switch_count += 1
-    else:
-        stay_count += 1
+
+stay_count = num_simulations - switch_count
 
 print("switch win count:", switch_count)
 print("stay win count", stay_count)
